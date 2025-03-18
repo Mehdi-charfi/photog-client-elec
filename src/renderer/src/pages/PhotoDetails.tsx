@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ShoppingCart, Download } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { format } from 'date-fns';
+import { PhotoFormat } from '../types';
 
 const filters = [
   { name: 'Original', class: '' },
@@ -15,7 +16,7 @@ const filters = [
   { name: 'Chaud', class: 'hue-rotate-60' },
   { name: 'Vintage', class: 'sepia brightness-75' },
   { name: 'Dramatique', class: 'contrast-125 brightness-75' },
-  { name: 'Vif', class: 'saturate-150' }
+  { name: 'Vif', class: 'saturate-150' },
 ];
 
 // Mock data - replace with API call later
@@ -25,22 +26,22 @@ const mockPhotos = [
     albumId: '1',
     title: 'Sunset at the Beach',
     url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
-    date: '2024-03-15'
+    date: '2024-03-15',
   },
   {
     id: '2',
     albumId: '1',
     title: 'Ocean Waves',
     url: 'https://images.unsplash.com/photo-1476673160081-cf065607f449',
-    date: '2024-03-15'
+    date: '2024-03-15',
   },
   {
     id: '3',
     albumId: '1',
     title: 'Beach Palm Trees',
     url: 'https://images.unsplash.com/photo-1509233725247-49e657c54213',
-    date: '2024-03-16'
-  }
+    date: '2024-03-16',
+  },
 ];
 
 export const PhotoDetails: React.FC = () => {
@@ -49,29 +50,28 @@ export const PhotoDetails: React.FC = () => {
   const { addToCart, cart } = useStore();
   const [selectedFilter, setSelectedFilter] = useState<string>('');
   const [selectedFilterName, setSelectedFilterName] = useState<string>('Original');
+  const [selectedFormat] = useState<PhotoFormat>('13x18'); // Default format
   const [isLoading, setIsLoading] = useState(false);
 
-  const photo = useMemo(() => 
-    mockPhotos.find(p => p.id === photoId),
-    [photoId]
-  );
+  const photo = useMemo(() => mockPhotos.find((p) => p.id === photoId), [photoId]);
 
-  const isInCart = useMemo(() => 
-    cart.some(item => item.photoId === photoId && item.filterName === selectedFilterName),
-    [cart, photoId, selectedFilterName]
+  const isInCart = useMemo(
+    () =>
+      cart.some(
+        (item) =>
+          item.photoId === photoId &&
+          item.filterName === selectedFilterName &&
+          item.format === selectedFormat
+      ),
+    [cart, photoId, selectedFilterName, selectedFormat]
   );
 
   const handleAddToCart = () => {
     if (!photo || isInCart) return;
     setIsLoading(true);
     try {
-      // Ajouter au panier avec les informations du filtre
-      addToCart({
-        ...photo,
-        filteredUrl: photo.url, // L'URL originale de la photo
-        filterName: selectedFilterName,
-        filterClass: selectedFilter
-      });
+      // Add to cart with filter and format information
+      addToCart(photo, selectedFormat, selectedFilterName, selectedFilter);
     } finally {
       setIsLoading(false);
     }
@@ -79,33 +79,33 @@ export const PhotoDetails: React.FC = () => {
 
   const handleDownload = async () => {
     if (!photo) return;
-    
+
     try {
-      // Créer un canvas temporaire
+      // Create a temporary canvas
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
-      img.crossOrigin = 'anonymous'; // Permet de charger les images d'autres domaines
-      
+
+      img.crossOrigin = 'anonymous'; // Allow loading images from other domains
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
         img.src = photo.url;
       });
-      
-      // Définir les dimensions du canvas
+
+      // Set canvas dimensions
       canvas.width = img.width;
       canvas.height = img.height;
-      
+
       if (!ctx) throw new Error('Could not get canvas context');
-      
-      // Dessiner l'image
+
+      // Draw the image
       ctx.drawImage(img, 0, 0);
-      
-      // Appliquer les filtres CSS via une matrice de filtres
+
+      // Apply CSS filters via a filter matrix
       if (selectedFilter) {
-        // Appliquer les filtres en fonction de la classe CSS
+        // Apply filters based on the CSS class
         if (selectedFilter.includes('grayscale')) {
           ctx.filter = 'grayscale(100%)';
         }
@@ -127,27 +127,27 @@ export const PhotoDetails: React.FC = () => {
           const rotation = selectedFilter.includes('180') ? '180deg' : '60deg';
           ctx.filter = `hue-rotate(${rotation})`;
         }
-        
-        // Redessiner l'image avec les filtres
+
+        // Redraw the image with filters
         ctx.drawImage(img, 0, 0);
       }
-      
-      // Convertir le canvas en blob
+
+      // Convert the canvas to a blob
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((b) => {
           if (b) resolve(b);
         }, 'image/jpeg', 0.95);
       });
-      
-      // Créer l'URL et déclencher le téléchargement
+
+      // Create the URL and trigger the download
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${photo.title}_${selectedFilterName}.jpg`;
       document.body.appendChild(a);
       a.click();
-      
-      // Nettoyer
+
+      // Clean up
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
@@ -177,9 +177,7 @@ export const PhotoDetails: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">{photo.title}</h1>
-            <p className="text-gray-600">
-              {format(new Date(photo.date), 'PP')}
-            </p>
+            <p className="text-gray-600">{format(new Date(photo.date), 'PP')}</p>
             <p className="text-blue-600 font-medium mt-1">
               Filtre sélectionné: {selectedFilterName}
             </p>
@@ -203,11 +201,11 @@ export const PhotoDetails: React.FC = () => {
             >
               <ShoppingCart className="w-5 h-5" />
               <span>
-                {isLoading 
-                  ? 'Chargement...' 
-                  : isInCart 
-                    ? 'Dans le panier' 
-                    : t('addToCart')}
+                {isLoading
+                  ? 'Chargement...'
+                  : isInCart
+                  ? 'Dans le panier'
+                  : t('addToCart')}
               </span>
             </button>
           </div>

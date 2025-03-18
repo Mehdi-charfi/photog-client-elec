@@ -14,7 +14,7 @@
 
 // /*
 // Pour utiliser l'API des albums:
-// 1. Faire un appel GET à http://127.0.0.1:3000/api/albums
+// 1. Faire un appel GET à http://localhost:3000/api/albums
 // 2. L'API retourne un tableau d'albums avec:
 //    - id: identifiant unique de l'album
 //    - name: le name de l'album
@@ -31,7 +31,7 @@
 //   useEffect(() => {
 //     const fetchAlbums = async () => {
 //       try {
-//         const response = await fetch('http://127.0.0.1:3000/api/albums');
+//         const response = await fetch('http://localhost:3000/api/albums');
 //         if (!response.ok) {
 //           throw new Error('Failed to fetch albums');
 //         }
@@ -41,7 +41,7 @@
 //         const formattedAlbums = data.map((album: any) => ({
 //           _id: album._id,
 //           name: album.name,
-//           cover_image: `http://127.0.0.1:3000/uploads/${album.cover_image}`,
+//           cover_image: `http://localhost:3000/uploads/${album.cover_image}`,
 //           date: new Date().toISOString().split('T')[0], // Date par défaut pour l'exemple
 //           photoCount: 0 // namebre par défaut pour l'exemple
 //         }));
@@ -72,17 +72,17 @@
 //     );
 //   }
 
-//   return (  
+//   return (
 //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 //       {albums.map((album) => (
 //         <div
-//           // key={`${album._id}`}       
+//           // key={`${album._id}`}
 //           key={album._id   || `fallback-${album.name}`}
 //           // onClick={() => navigate(`/albums/${album._id}`)}
 //           onClick={() => {
 //             console.log('Navigating to album with ID:', album._id);
 //             navigate(`/albums/${album._id}`);}}
-          
+
 //           className="group relative bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
 //         >
 //           {/* Image Container */}
@@ -127,73 +127,73 @@
 //     </div>
 //   );
 // };
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Camera, Image, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+// import { useTranslation } from 'react-i18next'
+import { Camera, Image,  ArrowBigLeft } from 'lucide-react'
 
 // Interface pour les albums de l'API
 interface Album {
-  _id: string;
-  name: string;
-  cover_image: string;
-  date: string;
-  photoCount: number;
+  _id: string
+  name: string
+  cover_image: string
+  date: string
+  photoCount: number
 }
 
 export const Albums: React.FC = () => {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [albums, setAlbums] = useState<Album[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate()
+  // const { t } = useTranslation()
+  const [albums, setAlbums] = useState<Album[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Timer for automatic navigation
   useEffect(() => {
     // Set up the timer to navigate back to the home page after 1 minute (60000 milliseconds)
     const timer = setTimeout(() => {
-      console.log("1 minute passed, redirecting to the home page...");
-      navigate('/');
-    }, 60000);
+      console.log('1 minute passed, redirecting to the home page...')
+      navigate('/')
+    }, 60000)
 
     // Clean up the timer when the component unmounts or when navigation happens
-    return () => clearTimeout(timer);
-  }, [navigate]);
+    return () => clearTimeout(timer)
+  }, [navigate])
 
   // Function to fetch albums from the API
   useEffect(() => {
     const fetchAlbums = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:3000/api/albums');
+        const response = await fetch('http://localhost:3000/api/albums')
         if (!response.ok) {
-          throw new Error('Failed to fetch albums');
+          throw new Error('Failed to fetch albums')
         }
-        const data = await response.json();
-        console.log(data);
+        const data = await response.json()
+        console.log(data)
         const formattedAlbums = data.map((album: any) => ({
           _id: album._id,
           name: album.name,
-          cover_image: `http://127.0.0.1:3000/uploads/${album.cover_image}`,
-          date: new Date().toISOString().split('T')[0], // Default date for example
+          cover_image: `http://localhost:3000/uploads/${album.cover_image}`,
+          date: new Date().toISOString().split('T')[0] // Default date for example
           // photoCount: 0 // Default photo count for example
-        }));
-        setAlbums(formattedAlbums);
+        }))
+        setAlbums(formattedAlbums)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchAlbums();
-  }, []);
+    fetchAlbums()
+  }, [])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -201,27 +201,44 @@ export const Albums: React.FC = () => {
       <div className="text-center py-12">
         <p className="text-red-500">{error}</p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen ">
+      <div className="sticky top-0 bg-white shadow-md z-10 ">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <ArrowBigLeft className="w-6 h-6 mr-2" />
+                  <span className="text-lg">Retour</span>
+                </button>
+      
+                <div className="relative">
+                  {/* <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /> */}
+                </div>
+                </div>
+              </div>
       {/* Back to Home Button */}
-      <button
-        onClick={() => navigate('/')}
-        className="fixed top-4 left-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
-      >
-        Back to Home
-      </button>
+      
 
       {/* Album Grid */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {albums.map((album) => (
           <div
             key={album._id || `fallback-${album.name}`}
             onClick={() => {
-              console.log('Navigating to album with ID:', album._id);
-              navigate(`/albums/${album._id}`);
+              console.log('Navigating to album with ID:', album._id)
+              navigate(`/albums/${album._id}`)
             }}
             className="group relative bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
@@ -266,5 +283,6 @@ export const Albums: React.FC = () => {
         ))}
       </div>
     </div>
-  );
-};
+    </div>
+  )
+}

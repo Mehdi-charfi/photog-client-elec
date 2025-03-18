@@ -13,14 +13,7 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      contentSecurityPolicy: `
-        default-src 'self';
-        connect-src 'self' http://127.0.0.1:3000;
-        script-src 'self';
-        style-src 'self' 'unsafe-inline';
-        img-src 'self' data:;
-      `,
+      sandbox: false
     }
   })
 

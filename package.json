@@ -27,6 +27,7 @@
     "@tailwindcss/vite": "^4.0.14",
     "date-fns": "^4.1.0",
     "electron-updater": "^6.3.9",
+    "framer-motion": "^12.5.0",
     "i18next": "^24.2.2",
     "lucide-react": "^0.479.0",
     "postcss": "^8.5.3",
