@@ -1,0 +1,109 @@
+name: Build/release Electron app
+
+on:
+  push:
+    # Run on pushes to main/master branch AND on version tags
+    branches:
+      - main
+      - master
+    tags:
+      - v*.*.*
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important for version generation
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Generate version from git tag or commit
+      - name: Generate version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            # If this is a tag, use the tag name as version
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "isPublish=true" >> $GITHUB_OUTPUT
+          else
+            # If this is not a tag, use the commit hash as version
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            echo "version=0.0.0-$SHORT_SHA" >> $GITHUB_OUTPUT
+            echo "isPublish=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      # Update package.json version
+      - name: Update version in package.json
+        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+        shell: bash
+
+      # Build for each platform
+      # - name: Build for Linux
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: npm run build:linux
+      #   env:
+      #     GH_TOKEN: ${{ secrets.PHOTOGCLIENT }}
+      #     # Only publish on tag pushes
+      #     USE_HARD_LINKS: false
+      #     PUBLISH: ${{ steps.version.outputs.isPublish }}
+
+      # - name: Build for macOS
+      #   if: matrix.os == 'macos-latest'
+      #   run: npm run build:mac
+      #   env:
+      #     GH_TOKEN: ${{ secrets.PHOTOGCLIENT }}
+      #     USE_HARD_LINKS: false
+      #     PUBLISH: ${{ steps.version.outputs.isPublish }}
+
+      - name: Build for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.PHOTOGCLIENT }}
+          USE_HARD_LINKS: false
+          PUBLISH: ${{ steps.version.outputs.isPublish }}
+
+      # Create GitHub Release on tag pushes
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          files: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/*.yml
+            dist/*.blockmap
+          body: |
+            ## Release Notes
+            
+            Automatic release from CI/CD pipeline
+            
+            ### Changes
+            
+            - See commit history for details
+        env:
+          PHOTOGCLIENT: ${{ secrets.PHOTOGCLIENT }}
