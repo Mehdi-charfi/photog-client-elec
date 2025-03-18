@@ -24,6 +24,14 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    frame: false,
+    resizable: true,
+    fullscreenable: true,
+    titleBarOverlay: {
+      color: '#2e2c29',
+      symbolColor: '#74b1be'
+    },
+    backgroundColor: '#2e2c29',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
