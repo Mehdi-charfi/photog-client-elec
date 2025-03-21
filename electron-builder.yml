@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: client
+appId: io.M2Deep.app
+productName: Client
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: client
+  executableName: Client
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -41,6 +41,6 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: https://github.com/Mehdi-charfi
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

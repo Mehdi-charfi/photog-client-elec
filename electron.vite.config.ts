@@ -1,14 +1,14 @@
 import { resolve } from 'path'
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin,bytecodePlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(),bytecodePlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin(),bytecodePlugin()]
   },
   renderer: {
     resolve: {
@@ -16,7 +16,7 @@ export default defineConfig({
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [react()]
+    plugins: [react(),bytecodePlugin()]
   }
 })
 // import { resolve } from 'path';

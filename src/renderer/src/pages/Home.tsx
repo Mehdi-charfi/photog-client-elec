@@ -244,14 +244,324 @@
 //   );
 // };
 
+// import { useState, useEffect } from 'react'
+// import { useNavigate } from 'react-router-dom'
+// import { useTranslation } from 'react-i18next'
+// import Slider from 'react-slick'
+// import { LanguageSelector } from '../components/LanguageSelector'
+// // import { Camera, Calendar, Image, ArrowRight } from 'lucide-react'
+// // import 'slick-carousel/slick/slick.css';
+// // import 'slick-carousel/slick/slick-theme.css';
+
+// interface APIPhoto {
+//   _id: string
+//   album_id: {
+//     _id: string
+//     name: string
+//   }
+//   photographer_id: {
+//     _id: string
+//     name: string
+//   }
+//   filename: string
+//   uploaded_at: string
+//   status: string
+//   is_deleted: boolean
+// }
+
+// interface Photo {
+//   id: string
+//   url: string
+//   title: string
+//   date: string
+//   photographer?: string
+//   albumId?: string
+//   albumName?: string
+// }
+
+// export const Home = () => {
+//   const navigate = useNavigate()
+//   const { t } = useTranslation()
+//   const [photos, setPhotos] = useState<Photo[]>([])
+//   const [loading, setLoading] = useState(true)
+//   const [error, setError] = useState<string | null>(null)
+//   const [currentSlide, setCurrentSlide] = useState(0)
+
+//   const fetchPhotos = async () => {
+//     try {
+//       setLoading(true)
+//       const response = await fetch('http://localhost:3000/api/photos')
+
+//       if (!response.ok) {
+//         throw new Error('Failed to fetch photos')
+//       }
+
+//       const apiPhotos: APIPhoto[] = await response.json()
+//       console.log('API Photos:', apiPhotos)
+
+//       // Filter the photos, keep only non-deleted and available photos, then sort by the most recent
+//       const formattedPhotos: Photo[] = apiPhotos
+//         .filter((photo) => !photo.is_deleted && photo.status === 'AVAILABLE')
+//         .map((photo) => ({
+//           id: photo._id,
+//           url: `http://localhost:3000/uploads/${photo.filename}`,
+//           title: photo.filename,
+//           date: new Date(photo.uploaded_at).toISOString().split('T')[0],
+//           photographer: photo.photographer_id?.name || 'Unknown',
+//           albumId: photo.album_id?._id || '',
+//           albumName: photo.album_id?.name || 'Uncategorized'
+//         }))
+
+//       // Sort photos by uploaded date (most recent first) and select the latest 21
+//       const sortedPhotos = formattedPhotos.sort(
+//         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+//       )
+//       const latestPhotos = sortedPhotos.slice(0, 21)
+
+//       setPhotos(latestPhotos)
+//       console.log('Processed photos:', latestPhotos)
+//     } catch (err) {
+//       console.error('Error fetching photos:', err)
+//       setError(
+//         err instanceof Error ? err.message : 'Une erreur est survenue lors du chargement des photos'
+//       )
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   useEffect(() => {
+//     fetchPhotos()
+//   }, [])
+
+//   // Calculate the number of slides we'll need
+//   const numberOfSlides = Math.ceil(photos.length / 3)
+
+//   // Settings for the slider
+//   const settings = {
+//     dots: true,
+//     infinite: photos.length > 3,
+//     speed: 1000,
+//     slidesToShow: 1,
+//     slidesToScroll: 1,
+//     autoplay: true,
+//     autoplaySpeed: 5000,
+//     cssEase: 'cubic-bezier(0.87, 0, 0.13, 1)',
+//     pauseOnHover: true,
+//     fade: true,
+//     beforeChange: (_: number, next: number) => setCurrentSlide(next),
+//     customPaging: () => (
+//       <div className="w-2 h-2 bg-white/50 rounded-full hover:bg-white/80 transition-colors"></div>
+//     ),
+//     dotsClass: 'slick-dots custom-dots flex gap-2 justify-center'
+//   }
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-black flex items-center justify-center">
+//         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+//       </div>
+//     )
+//   }
+
+//   if (error) {
+//     return (
+//       <div className="min-h-screen bg-black flex items-center justify-center">
+//         <div className="text-white text-center">
+//           <p className="text-xl mb-4">{error}</p>
+//           <button
+//             onClick={() => fetchPhotos()}
+//             className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200 transition-colors"
+//           >
+//             Réessayer
+//           </button>
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   // If we have no photos, show a fallback message
+//   if (photos.length === 0) {
+//     return (
+//       <div className="min-h-screen bg-black flex items-center justify-center">
+//         <div className="text-white text-center">
+//           <p className="text-xl mb-4">No photos available</p>
+//           <button
+//             onClick={() => fetchPhotos()}
+//             className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200 transition-colors"
+//           >
+//             Refresh
+//           </button>
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   // Render the component
+//   return (
+//     <div className="min-h-screen bg-black relative overflow-hidden">
+//       {/* Render content directly (no slider) when we have 3 or fewer photos */}
+//       {photos.length <= 3 ? (
+//         <div className="absolute inset-0 z-10 p-6">
+//           <div className="h-full grid grid-cols-2 gap-4">
+//             {/* Left column with 2 horizontal images */}
+//             <div className="flex flex-col gap-4">
+//               {photos[0] && (
+//                 <div className="h-1/2 group relative overflow-hidden rounded-lg">
+//                   <img
+//                     src={photos[0].url}
+//                     alt={photos[0].title}
+//                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                   />
+//                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                   <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                     <p className="text-white text-sm font-medium mb-1">{photos[0].photographer}</p>
+//                     <p className="text-white/80 text-xs">{photos[0].albumName}</p>
+//                   </div>
+//                 </div>
+//               )}
+              
+//               {photos[1] && (
+//                 <div className="h-1/2 group relative overflow-hidden rounded-lg">
+//                   <img
+//                     src={photos[1].url}
+//                     alt={photos[1].title}
+//                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                   />
+//                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                   <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                     <p className="text-white text-sm font-medium mb-1">{photos[1].photographer}</p>
+//                     <p className="text-white/80 text-xs">{photos[1].albumName}</p>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+            
+//             {/* Right column with 1 full-height image */}
+//             {photos[2] && (
+//               <div className="h-full group relative overflow-hidden rounded-lg">
+//                 <img
+//                   src={photos[2].url}
+//                   alt={photos[2].title}
+//                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                 />
+//                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                   <p className="text-white text-sm font-medium mb-1">{photos[2].photographer}</p>
+//                   <p className="text-white/80 text-xs">{photos[2].albumName}</p>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       ) : (
+//         // Use Slider when we have more than 3 photos
+//         <div className="absolute inset-0 z-10">
+//           <Slider {...settings}>
+//             {/* Generate slides based on the available photos */}
+//             {Array.from({ length: numberOfSlides }).map((_, slideIndex) => {
+//               // Get the 3 photos for this slide
+//               const startIdx = slideIndex * 3
+//               const slidePhotos = [
+//                 photos[startIdx],
+//                 photos[startIdx + 1],
+//                 photos[startIdx + 2]
+//               ].filter(Boolean) // Remove undefined items
+              
+//               // If we don't have 3 photos, fill with photos from the beginning
+//               while (slidePhotos.length < 3 && photos.length > 0) {
+//                 slidePhotos.push(photos[slidePhotos.length % photos.length])
+//               }
+              
+//               return (
+//                 <div key={`slide-${slideIndex}`} className="h-screen">
+//                   <div className="h-full grid grid-cols-2 gap-4 p-6">
+//                     {/* Left column with 2 horizontal images */}
+//                     <div className="flex flex-col gap-4">
+//                       <div className="h-1/2 group relative overflow-hidden rounded-lg">
+//                         <img
+//                           src={slidePhotos[0].url}
+//                           alt={slidePhotos[0].title}
+//                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                         />
+//                         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                         <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                           <p className="text-white text-sm font-medium mb-1">{slidePhotos[0].photographer}</p>
+//                           <p className="text-white/80 text-xs">{slidePhotos[0].albumName}</p>
+//                         </div>
+//                       </div>
+                      
+//                       <div className="h-1/2 group relative overflow-hidden rounded-lg">
+//                         <img
+//                           src={slidePhotos[1].url}
+//                           alt={slidePhotos[1].title}
+//                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                         />
+//                         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                         <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                           <p className="text-white text-sm font-medium mb-1">{slidePhotos[1].photographer}</p>
+//                           <p className="text-white/80 text-xs">{slidePhotos[1].albumName}</p>
+//                         </div>
+//                       </div>
+//                     </div>
+                    
+//                     {/* Right column with 1 full-height image */}
+//                     <div className="h-full group relative overflow-hidden rounded-lg">
+//                       <img
+//                         src={slidePhotos[2].url}
+//                         alt={slidePhotos[2].title}
+//                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+//                       />
+//                       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+//                       <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+//                         <p className="text-white text-sm font-medium mb-1">{slidePhotos[2].photographer}</p>
+//                         <p className="text-white/80 text-xs">{slidePhotos[2].albumName}</p>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </div>
+//               )
+//             })}
+//           </Slider>
+
+//           {/* Slide Counter with modern design */}
+//           <div className="absolute bottom-8 left-8 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full text-white/90 font-medium text-sm">
+//             {currentSlide + 1} / {numberOfSlides}
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Language Selector with glass morphism */}
+//       <div className="absolute top-0 right-0 bottom-0 w-20 bg-black/30 backdrop-blur-sm z-30 border-l border-white/10">
+//         <div className="h-full flex flex-col items-center justify-center">
+//           <LanguageSelector />
+//         </div>
+//       </div>
+
+//       {/* Welcome Button with modern glass morphism */}
+//       <div className="absolute inset-0 flex items-center justify-center z-20">
+//         <button
+//           onClick={() => navigate('/albums')}
+//           className="group bg-black/40 backdrop-blur-md p-8 rounded-xl transform transition-all duration-500 hover:scale-105 hover:bg-black/70 border border-white/10"
+//         >
+//           <h1 className="text-white text-4xl md:text-6xl font-bold text-center">{t('welcome')}</h1>
+//           <div className="h-1 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 mt-4" />
+//         </button>
+//       </div>
+//     </div>
+//   )
+// }
+
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Slider from 'react-slick'
 import { LanguageSelector } from '../components/LanguageSelector'
-// import { Camera, Calendar, Image, ArrowRight } from 'lucide-react'
-// import 'slick-carousel/slick/slick.css';
-// import 'slick-carousel/slick/slick-theme.css';
+
+
+import "slick-carousel/slick/slick.css";
+
+import "slick-carousel/slick/slick-theme.css";
 
 interface APIPhoto {
   _id: string
@@ -274,10 +584,13 @@ interface Photo {
   url: string
   title: string
   date: string
-  photographer?: string
-  albumId?: string
-  albumName?: string
+  photographer: string
+  albumName: string
 }
+
+const chunkArray = (arr: any[], size: number) => 
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size))
 
 export const Home = () => {
   const navigate = useNavigate()
@@ -290,41 +603,27 @@ export const Home = () => {
   const fetchPhotos = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:3000/api/photos')
+      const response = await fetch('http://localhost:3000/api/diaporamaImages')
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch photos')
-      }
+      if (!response.ok) throw new Error('Failed to fetch photos')
 
       const apiPhotos: APIPhoto[] = await response.json()
-      console.log('API Photos:', apiPhotos)
-
-      // Filter the photos, keep only non-deleted and available photos, then sort by the most recent
-      const formattedPhotos: Photo[] = apiPhotos
-        .filter((photo) => !photo.is_deleted && photo.status === 'AVAILABLE')
-        .map((photo) => ({
+      
+      const formattedPhotos = apiPhotos
+        .filter(photo => !photo.is_deleted && photo.status === 'AVAILABLE')
+        .map(photo => ({
           id: photo._id,
-          url: `http://localhost:3000/uploads/${photo.filename}`,
+          url: `http://localhost:3000/uploads/diaporama/${photo.filename}`,
           title: photo.filename,
           date: new Date(photo.uploaded_at).toISOString().split('T')[0],
-          photographer: photo.photographer_id?.name || 'Unknown',
-          albumId: photo.album_id?._id || '',
+          photographer: photo.photographer_id?.name || 'Unknown Photographer',
           albumName: photo.album_id?.name || 'Uncategorized'
         }))
 
-      // Sort photos by uploaded date (most recent first) and select the latest 21
-      const sortedPhotos = formattedPhotos.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      const latestPhotos = sortedPhotos.slice(0, 21)
-
-      setPhotos(latestPhotos)
-      console.log('Processed photos:', latestPhotos)
+      setPhotos(formattedPhotos)
     } catch (err) {
       console.error('Error fetching photos:', err)
-      setError(
-        err instanceof Error ? err.message : 'Une erreur est survenue lors du chargement des photos'
-      )
+      setError(err instanceof Error ? err.message : 'Failed to load photos')
     } finally {
       setLoading(false)
     }
@@ -334,13 +633,11 @@ export const Home = () => {
     fetchPhotos()
   }, [])
 
-  // Calculate the number of slides we'll need
-  const numberOfSlides = Math.ceil(photos.length / 3)
+  const photoGroups = chunkArray([...photos, ...photos], 3) // Duplicate to ensure smooth looping
 
-  // Settings for the slider
   const settings = {
     dots: true,
-    infinite: photos.length > 3,
+    infinite: true,
     speed: 1000,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -350,16 +647,21 @@ export const Home = () => {
     pauseOnHover: true,
     fade: true,
     beforeChange: (_: number, next: number) => setCurrentSlide(next),
-    customPaging: () => (
-      <div className="w-2 h-2 bg-white/50 rounded-full hover:bg-white/80 transition-colors"></div>
+    arrows: false,
+    appendDots: (dots: React.ReactNode) => (
+      <div className="custom-dots">
+        <ul className="flex gap-2 justify-center">{dots}</ul>
+      </div>
     ),
-    dotsClass: 'slick-dots custom-dots flex gap-2 justify-center'
+    customPaging: () => (
+      <div className="w-2 h-2 bg-white/50 rounded-full transition-all hover:bg-white/80" />
+    )
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white" />
       </div>
     )
   }
@@ -370,175 +672,88 @@ export const Home = () => {
         <div className="text-white text-center">
           <p className="text-xl mb-4">{error}</p>
           <button
-            onClick={() => fetchPhotos()}
+            onClick={fetchPhotos}
             className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200 transition-colors"
           >
-            Réessayer
+            {t('retry')}
           </button>
         </div>
       </div>
     )
   }
 
-  // If we have no photos, show a fallback message
-  if (photos.length === 0) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-center">
-          <p className="text-xl mb-4">No photos available</p>
-          <button
-            onClick={() => fetchPhotos()}
-            className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200 transition-colors"
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // Render the component
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Render content directly (no slider) when we have 3 or fewer photos */}
-      {photos.length <= 3 ? (
-        <div className="absolute inset-0 z-10 p-6">
-          <div className="h-full grid grid-cols-2 gap-4">
-            {/* Left column with 2 horizontal images */}
-            <div className="flex flex-col gap-4">
-              {photos[0] && (
-                <div className="h-1/2 group relative overflow-hidden rounded-lg">
-                  <img
-                    src={photos[0].url}
-                    alt={photos[0].title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-white text-sm font-medium mb-1">{photos[0].photographer}</p>
-                    <p className="text-white/80 text-xs">{photos[0].albumName}</p>
-                  </div>
-                </div>
-              )}
-              
-              {photos[1] && (
-                <div className="h-1/2 group relative overflow-hidden rounded-lg">
-                  <img
-                    src={photos[1].url}
-                    alt={photos[1].title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-white text-sm font-medium mb-1">{photos[1].photographer}</p>
-                    <p className="text-white/80 text-xs">{photos[1].albumName}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Right column with 1 full-height image */}
-            {photos[2] && (
-              <div className="h-full group relative overflow-hidden rounded-lg">
-                <img
-                  src={photos[2].url}
-                  alt={photos[2].title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <p className="text-white text-sm font-medium mb-1">{photos[2].photographer}</p>
-                  <p className="text-white/80 text-xs">{photos[2].albumName}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        // Use Slider when we have more than 3 photos
-        <div className="absolute inset-0 z-10">
-          <Slider {...settings}>
-            {/* Generate slides based on the available photos */}
-            {Array.from({ length: numberOfSlides }).map((_, slideIndex) => {
-              // Get the 3 photos for this slide
-              const startIdx = slideIndex * 3
-              const slidePhotos = [
-                photos[startIdx],
-                photos[startIdx + 1],
-                photos[startIdx + 2]
-              ].filter(Boolean) // Remove undefined items
-              
-              // If we don't have 3 photos, fill with photos from the beginning
-              while (slidePhotos.length < 3 && photos.length > 0) {
-                slidePhotos.push(photos[slidePhotos.length % photos.length])
-              }
-              
-              return (
-                <div key={`slide-${slideIndex}`} className="h-screen">
-                  <div className="h-full grid grid-cols-2 gap-4 p-6">
-                    {/* Left column with 2 horizontal images */}
-                    <div className="flex flex-col gap-4">
-                      <div className="h-1/2 group relative overflow-hidden rounded-lg">
-                        <img
-                          src={slidePhotos[0].url}
-                          alt={slidePhotos[0].title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                          <p className="text-white text-sm font-medium mb-1">{slidePhotos[0].photographer}</p>
-                          <p className="text-white/80 text-xs">{slidePhotos[0].albumName}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="h-1/2 group relative overflow-hidden rounded-lg">
-                        <img
-                          src={slidePhotos[1].url}
-                          alt={slidePhotos[1].title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                          <p className="text-white text-sm font-medium mb-1">{slidePhotos[1].photographer}</p>
-                          <p className="text-white/80 text-xs">{slidePhotos[1].albumName}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Right column with 1 full-height image */}
-                    <div className="h-full group relative overflow-hidden rounded-lg">
+      <div className="absolute inset-0 z-10">
+        <Slider {...settings}>
+          {photoGroups.map((group, index) => (
+            <div key={`slide-${index}`} className="h-screen p-4">
+              <div className="h-full grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
+                  {group[0] && (
+                    <div className="h-1/2 relative group overflow-hidden rounded-xl">
                       <img
-                        src={slidePhotos[2].url}
-                        alt={slidePhotos[2].title}
+                        src={group[0].url}
+                        alt={group[0].title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
                       <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        <p className="text-white text-sm font-medium mb-1">{slidePhotos[2].photographer}</p>
-                        <p className="text-white/80 text-xs">{slidePhotos[2].albumName}</p>
+                        <p className="text-white text-sm font-medium">{group[0].photographer}</p>
+                        <p className="text-white/80 text-xs">{group[0].albumName}</p>
                       </div>
                     </div>
-                  </div>
+                  )}
+                  {group[1] && (
+                    <div className="h-1/2 relative group overflow-hidden rounded-xl">
+                      <img
+                        src={group[1].url}
+                        alt={group[1].title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        <p className="text-white text-sm font-medium">{group[1].photographer}</p>
+                        <p className="text-white/80 text-xs">{group[1].albumName}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )
-            })}
-          </Slider>
+                <div className="h-full relative group overflow-hidden rounded-xl">
+                  {group[2] && (
+                    <>
+                      <img
+                        src={group[2].url}
+                        alt={group[2].title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        <p className="text-white text-sm font-medium">{group[2].photographer}</p>
+                        <p className="text-white/80 text-xs">{group[2].albumName}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </Slider>
 
-          {/* Slide Counter with modern design */}
-          <div className="absolute bottom-8 left-8 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full text-white/90 font-medium text-sm">
-            {currentSlide + 1} / {numberOfSlides}
-          </div>
+        <div className="absolute bottom-8 left-8 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full text-white/90 text-sm">
+          {currentSlide + 1} / {photoGroups.length}
         </div>
-      )}
+      </div>
 
-      {/* Language Selector with glass morphism */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-black/30 backdrop-blur-sm z-30 border-l border-white/10">
         <div className="h-full flex flex-col items-center justify-center">
           <LanguageSelector />
         </div>
       </div>
 
-      {/* Welcome Button with modern glass morphism */}
       <div className="absolute inset-0 flex items-center justify-center z-20">
         <button
           onClick={() => navigate('/albums')}
